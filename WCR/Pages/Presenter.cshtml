@@ -1,0 +1,18 @@
+﻿@page
+@model WCR.Pages.ViewerModel
+@{
+}
+<video id="Presentation" autoplay="autoplay" width="1280" height="720"> </video>
+
+<script type="text/javascript">	
+	if (navigator.mediaDevices.getUserMedia) {
+		var video = document.querySelector("#Presentation");
+		function handleVideo(webcamStream) {
+			video.srcObject = webcamStream;
+		}
+		function handleError(error) {
+			console.log(error);
+		}
+		navigator.mediaDevices.getUserMedia({ video: true, audio: true}).then(handleVideo).catch(handleError);
+	}
+</script>
