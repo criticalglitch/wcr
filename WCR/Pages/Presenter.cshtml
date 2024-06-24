@@ -4,15 +4,9 @@
 }
 <video id="Presentation" autoplay="autoplay" width="1280" height="720"> </video>
 
-<script type="text/javascript">	
-	if (navigator.mediaDevices.getUserMedia) {
-		var video = document.querySelector("#Presentation");
-		function handleVideo(webcamStream) {
-			video.srcObject = webcamStream;
-		}
-		function handleError(error) {
-			console.log(error);
-		}
-		navigator.mediaDevices.getUserMedia({ video: true, audio: true}).then(handleVideo).catch(handleError);
-	}
-</script>
+@section Scripts
+{
+	<script type="text/javascript" src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+	<script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+	<script type="text/javascript">$(document).ready(InitializePresenter);</script>
+}
