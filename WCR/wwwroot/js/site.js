@@ -1,18 +1,35 @@
 ﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
+import { signalR } from "../lib/microsoft/signalr/dist/browser/signalr";
+
 // Write your JavaScript code.
-function GetVideo()
-{
-	if (navigator.mediaDevices.getUserMedia) {
+async function GetVideo() {
+	if (!navigator.mediaDevices.getUserMedia) {
+		return;
+	}
 		var video = document.querySelector("#Presentation");
-		function handleVideo(webcamStream) {
+	try {
+		var webCamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 			video.srcObject = webcamStream;
 		}
-		function handleError(error) {
-			console.log(error);
+	catch (err) {
+		console.log(err);
 		}
-		navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(handleVideo).catch(handleError);
+	}
+
+async function InitializePresenter() {
+	window.WCR = {};
+	var wcr = window.WCR;
+	wcr.connection = new signalR.HubConnectionBuilder().withUrl("/PresentationHub").build(); // create connection
+	try {
+		await wcr.connection.start();
+		InitSignalR();
+		await wcr.connection.invoke("CreateRoom");
+		InitWebRTC();
+}
+	catch (err) {
+		console.error(err.toString());
 	}
 }
 
