@@ -69,3 +69,11 @@ function InitSignalR() {
 		}
 	}); 
 }
+
+function InitWebRTC() {
+	const config = {
+		"iceServers": [{"urls": "stun:stun.1.google.com:19302"}]
+	};
+	var wcr = window.WCR;
+	wcr.videoConnection = new RTCPeerConnection(config)
+}
