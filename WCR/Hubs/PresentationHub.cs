@@ -20,6 +20,22 @@ namespace WCR.Hubs
 			await Groups.AddToGroupAsync(Context.ConnectionId, presentationId.ToString());
 			await Clients.Caller.SendAsync("joined", presentationId.ToString());
 			await Clients.Group(presentationId.ToString()).SendAsync("ready");
+			if (roomMgr[presentationId].SessionDescription != null)
+			{
+				await Clients.Caller.SendAsync("offerVideo", roomMgr[presentationId].SessionDescription);
+			}
+		}
+
+		public async Task SetVideoStream(Guid presentationId, string session)
+		{
+			roomMgr[presentationId].SessionDescription = session;
+			await Clients.Group(presentationId.ToString()).SendAsync("offerVideo", session);
+		}
+
+		public async Task OfferVideoTransportCandidate(Guid presentationId, string candidate)
+		{
+			var host = roomMgr[presentationId].ConnectionId;
+			await Clients.Client(host).SendAsync("newVideoTransportCandidate", candidate);
 		}
 
 		public async Task LeaveRoom(Guid presentationId)

@@ -1,9 +1,8 @@
-﻿namespace WCR.Models
+﻿namespace WCR.Models;
+
+public class Presentation
 {
-	public class Presentation
-	{
-		public Guid Id { get; } = Guid.NewGuid();
-		
-		public required string ConnectionId { get; set; }
-	}
+	public Guid Id { get; } = Guid.NewGuid();
+	public required string ConnectionId { get; set; }
+	public string? SessionDescription { get; set; } = null;
 }
