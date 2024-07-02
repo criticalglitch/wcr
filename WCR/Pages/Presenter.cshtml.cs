@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WCR.Pages
 {
-    public class ViewerModel : PageModel
+    public class PresenterModel : PageModel
     {
         public void OnGet()
         {
