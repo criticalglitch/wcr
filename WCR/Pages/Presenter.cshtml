@@ -2,11 +2,9 @@
 @model WCR.Pages.PresenterModel
 @{
 }
-<video id="Presentation" autoplay="autoplay" width="1280" height="720"> </video>
+<div id="presentation-container"></div>
 
 @section Scripts
 {
-	<script type="text/javascript" src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
-	<script type="text/javascript" src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 	<script type="text/javascript">$(document).ready(InitializePresenter);</script>
 }
