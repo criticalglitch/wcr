@@ -1,3 +1,4 @@
+using WCR.Endpoints;
 using WCR.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapHub<PresentationHub>("/PresentationHub");
+
+app.MapTranscriptionEndpoint();
 
 app.MapRazorPages();
 
