@@ -16,7 +16,14 @@ function InitializePresenter() {
 		};
 		InitWebRTC();
 		wcr.videoConnection.open(wcr.presentationId, function () {
-			// TODO: display shareable presentation URL
+			var container = document.getElementById("share-container");
+			var button = document.createElement("button");
+			button.textContent = "Share Presentation";
+			button.addEventListener("click", function () {
+				var presentationUrl = `${window.location.origin}/viewer?presentationId=${wcr.presentationId}`;
+				navigator.clipboard.writeText(presentationUrl);
+			});
+			container.appendChild(button);
 		});
 	}
 	catch (err) {
