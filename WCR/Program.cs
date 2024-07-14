@@ -1,12 +1,13 @@
 using WCR.Endpoints;
 using WCR.Hubs;
+using WCR.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
-
+builder.Services.AddTransient<ITranscriptionService, AzureTranscriptionService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

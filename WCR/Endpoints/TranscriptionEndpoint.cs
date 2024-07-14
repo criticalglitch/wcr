@@ -1,4 +1,7 @@
-﻿namespace WCR.Endpoints;
+﻿using Microsoft.AspNetCore.Mvc;
+using WCR.Services;
+
+namespace WCR.Endpoints;
 
 public static class TranscriptionEndpoint
 {
@@ -8,8 +11,9 @@ public static class TranscriptionEndpoint
         return builder;
     }
 
-    private static async Task<IResult> TranscribeImage(Stream body)
+    private static async Task<IResult> TranscribeImage(Stream body, [FromServices]ITranscriptionService transcriptionService)
     {
-        return Results.Ok();
+        var results = await transcriptionService.TranscribeImageAsync(body);
+        return Results.Ok(results);
     }
 }
