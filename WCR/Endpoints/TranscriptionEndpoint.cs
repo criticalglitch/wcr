@@ -8,8 +8,8 @@ public static class TranscriptionEndpoint
         return builder;
     }
 
-    private static async Task TranscribeImage(Stream body)
+    private static async Task<IResult> TranscribeImage(Stream body)
     {
-        throw new NotImplementedException();
+        return Results.Ok();
     }
 }

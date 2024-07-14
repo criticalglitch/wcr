@@ -36,7 +36,8 @@ function InitializeViewer() {
 	window.WCR = {
 		presentationId: urlParams.get("presentationId"),
 		connection: new signalR.HubConnectionBuilder().withUrl("/PresentationHub").build(), // create connection
-		videoConnection: new RTCMultiConnection()
+		videoConnection: new RTCMultiConnection(),
+		captureCanvas: document.createElement("canvas")
 	};
 	var wcr = window.WCR;
 	try {
@@ -45,7 +46,29 @@ function InitializeViewer() {
 			OfferToReceiveVideo: true
 		};
 		InitWebRTC();
-		wcr.videoConnection.openOrJoin(wcr.presentationId, undefined);
+		wcr.videoConnection.openOrJoin(wcr.presentationId, function () {
+			var container = document.getElementById("share-container");
+			var button = document.createElement("button");
+			button.textContent = "Request Transcription";
+			button.addEventListener("click", function () {
+				wcr.captureCanvas.toBlob(async function (body) {
+					var response = await fetch(`${window.location.origin}/api/v1/transcribe`, {
+						method: "POST",
+						headers: new Headers({
+							"Content-Type": "application/octet-stream"
+						}), body
+					});
+				}, "image/png");
+			});
+			container.appendChild(button);
+			var drawingContext = wcr.captureCanvas.getContext("2d");
+			var video = document.getElementById(wcr.streamid);
+			function cloneVideoToCanvas() {
+				drawingContext.drawImage(video, 0, 0, video.width, video.height);
+				requestAnimationFrame(cloneVideoToCanvas);
+			}
+			video.addEventListener("loadeddata", cloneVideoToCanvas);
+		});
 	}
 	catch (err) {
 		console.error(err.toString());
@@ -86,6 +109,7 @@ function InitWebRTC() {
 		var width = parseInt(connection.videosContainer.clientWidth / 3) - 25;
 		presentation.style.width = width;
 		connection.videosContainer.appendChild(presentation);
+		wcr.streamid = event.streamid;
 		setTimeout(presentation.media.play, 5000);
 	};
 }
