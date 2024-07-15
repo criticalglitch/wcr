@@ -64,7 +64,9 @@ function InitializeViewer() {
 			var drawingContext = wcr.captureCanvas.getContext("2d");
 			var video = document.getElementById(wcr.streamid);
 			function cloneVideoToCanvas() {
-				drawingContext.drawImage(video, 0, 0, video.width, video.height);
+				drawingContext.canvas.width = video.videoWidth;
+				drawingContext.canvas.height = video.videoHeight;
+				drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 				requestAnimationFrame(cloneVideoToCanvas);
 			}
 			video.addEventListener("loadeddata", cloneVideoToCanvas);
