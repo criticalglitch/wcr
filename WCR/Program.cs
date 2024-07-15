@@ -1,3 +1,4 @@
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using WCR.Endpoints;
 using WCR.Hubs;
 using WCR.Services;
@@ -7,6 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+builder.Services.AddTransient(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    return new ComputerVisionClient(new ApiKeyServiceClientCredentials(config["Transcription:Azure:ApiKey"]))
+    {
+        Endpoint = config["Transcription:Azure:Endpoint"]
+    };
+});
 builder.Services.AddTransient<ITranscriptionService, AzureTranscriptionService>();
 var app = builder.Build();
 
