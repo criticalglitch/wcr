@@ -81,7 +81,19 @@ function InitWebRTC() {
 	var wcr = window.WCR;
 	wcr.videoConnection.channel = wcr.presentationId;
 	wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
-	wcr.videoConnection.session = { audio: true, video: true, oneway: true };
+	wcr.videoConnection.mediaConstraints = {
+		audio: true,
+		video: {
+			mandatory: {
+				minWidth: 1280,
+				maxWidth: 1280,
+				minHeight: 720,
+				maxHeight: 720
+			},
+			optional: []
+		}
+	};
+
 	wcr.videoConnection.iceServers = [
 		{
 			"urls": [ "stun:stun.1.google.com:19302" ]
