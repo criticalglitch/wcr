@@ -18,10 +18,12 @@ function InitializePresenter() {
 		wcr.videoConnection.open(wcr.presentationId, function () {
 			var container = document.getElementById("share-container");
 			var button = document.createElement("button");
-			button.textContent = "Share Presentation";
+			button.textContent = "🔗 Share Presentation";
+			button.id = "share";
 			button.addEventListener("click", function () {
 				var presentationUrl = `${window.location.origin}/viewer?presentationId=${wcr.presentationId}`;
 				navigator.clipboard.writeText(presentationUrl);
+				show_notification("Copied!");
 			});
 			container.appendChild(button);
 		});
@@ -126,4 +128,13 @@ function InitWebRTC() {
 		wcr.streamid = event.streamid;
 		setTimeout(presentation.media.play, 5000);
 	};
+}
+
+function show_notification(msg) {
+	const notification = document.getElementById("notification");
+	notification.innerText = msg;
+	notification.classList.add("show");
+	setTimeout(function () {
+		notification.classList.remove("show");
+	}, 5000);
 }
