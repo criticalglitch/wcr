@@ -49,12 +49,7 @@ function InitializeViewer() {
 		};
 		InitWebRTC(false);
 
-		wcr.videoConnection.join(wcr.presentationId, function (isJoined, roomid, error) {
-			console.log(isJoined);
-			console.log(roomid);
-			console.log(error);
-			InitViewerUI();
-		});
+		wcr.videoConnection.openOrJoin(wcr.presentationId, InitViewerUI);
 	}
 	catch (err) {
 		console.error(err.toString());
@@ -80,14 +75,14 @@ function InitViewerUI() {
 	});
 	container.appendChild(button);
 	var drawingContext = wcr.captureCanvas.getContext("2d");
-	var video = document.getElementById(wcr.streamid);
-	function cloneVideoToCanvas() {
-		drawingContext.canvas.width = video.videoWidth;
-		drawingContext.canvas.height = video.videoHeight;
-		drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-		requestAnimationFrame(cloneVideoToCanvas);
-	}
-	video.addEventListener("loadeddata", cloneVideoToCanvas);
+	//var video = document.getElementById(wcr.streamid);
+	//function cloneVideoToCanvas() {
+	//	drawingContext.canvas.width = video.videoWidth;
+	//	drawingContext.canvas.height = video.videoHeight;
+	//	drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+	//	requestAnimationFrame(cloneVideoToCanvas);
+	//}
+	//video.addEventListener("loadeddata", cloneVideoToCanvas);
 }
 
 function InitWebRTC(isPresenter) {
