@@ -7,7 +7,10 @@ public class AzureTranscriptionService(ComputerVisionClient client) : ITranscrip
 {
     public async Task<IEnumerable<TranscriptionEntry>> TranscribeImageAsync(Stream Image)
     {
-        var response = await client.ReadInStreamWithHttpMessagesAsync(Image);
+        var response = await client.ReadInStreamWithHttpMessagesAsync(Image, customHeaders: new() {
+            { "Content-Type", ["application/octet-stream"] }
+        });
+
         var results_location = response.Headers.OperationLocation[^36..];
         ReadOperationResult results;
         do
