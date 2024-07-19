@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using WCR.Endpoints;
 using WCR.Hubs;
@@ -17,6 +18,12 @@ builder.Services.AddTransient(sp =>
     };
 });
 builder.Services.AddTransient<ITranscriptionService, AzureTranscriptionService>();
+
+if(builder.Environment.IsProduction())
+{
+    builder.Configuration.AddAzureKeyVault(new Uri($"https://{builder.Configuration["Config:Azure:VaultName"]}.vault.azure.net/"), new DefaultAzureCredential());
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
