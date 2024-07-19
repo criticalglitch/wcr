@@ -61,3 +61,37 @@ body {
         opacity: 1;
     }
 }
+
+.container-fill {
+    margin-left: 2%;
+    margin-right:2%;
+    width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    position: relative;
+    border: 2px solid cyan;
+    max-width: 96%;
+}
+
+.container-fill > main {
+    width: 100%;
+}
+
+    .wrapper {
+        width: 100%;
+        display: flex;
+        border: 2px solid green;
+    }
+
+    #presentation-container {
+        border: 2px solid orange;
+        width:fit-content;
+    }
+
+#transcription-list-container {
+    border-color: hotpink;
+    border-width: 2px;
+    border-style: solid;
+    min-height: 100%;
+    width: 100%;
+}

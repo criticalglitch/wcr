@@ -49,6 +49,8 @@ function InitializeViewer() {
 		};
 		InitWebRTC();
 		wcr.videoConnection.openOrJoin(wcr.presentationId, function () {
+			var main = document.querySelector("main");
+			main.parentElement.classList.add("container-fill");
 			var container = document.getElementById("share-container");
 			var button = document.createElement("button");
 			button.textContent = "Request Transcription";
@@ -95,6 +97,11 @@ function InitWebRTC() {
 			optional: []
 		}
 	};
+
+	if (wcr.videoConnection.DetectRTC.browser.name === 'Firefox') {
+		wcr.videoConnection.mediaConstraints.width = 1280;
+		wcr.videoConnection.mediaConstraints.height = 720;
+	}
 
 	wcr.videoConnection.iceServers = [
 		{
