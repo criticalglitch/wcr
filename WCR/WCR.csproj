@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>705553a7-0fb5-4c12-bbb2-d8ccd00a6a63</UserSecretsId>
+    <ContainerRepository>wcr</ContainerRepository>
   </PropertyGroup>
 
   <ItemGroup>
