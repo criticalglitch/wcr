@@ -48,42 +48,53 @@ function InitializeViewer() {
 			OfferToReceiveVideo: true
 		};
 		InitWebRTC(false);
-		wcr.videoConnection.openOrJoin(wcr.presentationId, function () {
-			var main = document.querySelector("main");
-			main.parentElement.classList.add("container-fill");
-			var container = document.getElementById("share-container");
-			var button = document.createElement("button");
-			button.textContent = "Request Transcription";
-			button.addEventListener("click", function () {
-				wcr.captureCanvas.toBlob(async function (body) {
-					var response = await fetch(`${window.location.origin}/api/v1/transcribe`, {
-						method: "POST",
-						headers: new Headers({
-							"Content-Type": "application/octet-stream"
-						}), body
-					});
-				}, "image/png");
-			});
-			container.appendChild(button);
-			var drawingContext = wcr.captureCanvas.getContext("2d");
-			var video = document.getElementById(wcr.streamid);
-			function cloneVideoToCanvas() {
-				drawingContext.canvas.width = video.videoWidth;
-				drawingContext.canvas.height = video.videoHeight;
-				drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-				requestAnimationFrame(cloneVideoToCanvas);
+
+		wcr.videoConnection.join(wcr.presentationId, {
+			isOneWay: true,
+			localPeerSdpConstraints: {
+				OfferToReceiveAudio: false,
+				OfferToReceiveVideo: false
 			}
-			video.addEventListener("loadeddata", cloneVideoToCanvas);
 		});
+		InitViewerUI();
 	}
 	catch (err) {
 		console.error(err.toString());
 	}
 }
 
+function InitViewerUI() {
+	var wcr = window.WCR;
+	var main = document.querySelector("main");
+	main.parentElement.classList.add("container-fill");
+	var container = document.getElementById("share-container");
+	var button = document.createElement("button");
+	button.textContent = "Request Transcription";
+	button.addEventListener("click", function () {
+		wcr.captureCanvas.toBlob(async function (body) {
+			var response = await fetch(`${window.location.origin}/api/v1/transcribe`, {
+				method: "POST",
+				headers: new Headers({
+					"Content-Type": "application/octet-stream"
+				}), body
+			});
+		}, "image/png");
+	});
+	container.appendChild(button);
+	var drawingContext = wcr.captureCanvas.getContext("2d");
+	var video = document.getElementById(wcr.streamid);
+	function cloneVideoToCanvas() {
+		drawingContext.canvas.width = video.videoWidth;
+		drawingContext.canvas.height = video.videoHeight;
+		drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+		requestAnimationFrame(cloneVideoToCanvas);
+	}
+	video.addEventListener("loadeddata", cloneVideoToCanvas);
+}
+
 function InitWebRTC(isPresenter) {
 	var wcr = window.WCR;
-	wcr.videoConnection.channel = wcr.presentationId;
+	wcr.videoConnection.channel = "wcr";
 	wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
 	wcr.videoConnection.session = {
 		audio: true,
