@@ -119,7 +119,12 @@ function InitWebRTC(isPresenter) {
 
 	wcr.videoConnection.iceServers = [
 		{
-			"urls": [ "stun:stun.1.google.com:19302" ]
+			"urls": [
+				'stun:stun.l.google.com:19302',
+				'stun:stun1.l.google.com:19302',
+				'stun:stun2.l.google.com:19302',
+				'stun:stun.l.google.com:19302?transport=udp',
+			]
 		}
 	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
