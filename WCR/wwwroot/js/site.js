@@ -126,12 +126,11 @@ function InitWebRTC(isPresenter) {
 	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
 
-	wcr.videoConnection.onMediaError = console.log;
+	wcr.videoConnection.enableScalableBroadcast = true;
+	wcr.videoConnection.dontAttachLocalStream = !isPresenter;
+	wcr.videoConnection.dontGetRemoteStream = isPresenter;
 
 	wcr.videoConnection.onstream = function (event) {
-		if (isPresenter === false && event.type === "local") {
-			return;
-		}
 		var existing = document.getElementById(event.streamid);
 		if (existing && existing.parentNode) {
 			existing.parentNode.removeChild(existing);
