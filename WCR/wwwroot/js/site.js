@@ -49,14 +49,12 @@ function InitializeViewer() {
 		};
 		InitWebRTC(false);
 
-		wcr.videoConnection.join(wcr.presentationId, {
-			isOneWay: true,
-			localPeerSdpConstraints: {
-				OfferToReceiveAudio: false,
-				OfferToReceiveVideo: false
-			}
+		wcr.videoConnection.join(wcr.presentationId, function (isJoined, roomid, error) {
+			console.log(isJoined);
+			console.log(roomid);
+			console.log(error);
+			InitViewerUI();
 		});
-		InitViewerUI();
 	}
 	catch (err) {
 		console.error(err.toString());
