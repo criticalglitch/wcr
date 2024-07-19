@@ -14,7 +14,7 @@ function InitializePresenter() {
 			OfferToReceiveAudio: false,
 			OfferToReceiveVideo: false
 		};
-		InitWebRTC();
+		InitWebRTC(true);
 		wcr.videoConnection.open(wcr.presentationId, function () {
 			var container = document.getElementById("share-container");
 			var button = document.createElement("button");
@@ -47,7 +47,7 @@ function InitializeViewer() {
 			OfferToReceiveAudio: true,
 			OfferToReceiveVideo: true
 		};
-		InitWebRTC();
+		InitWebRTC(false);
 		wcr.videoConnection.openOrJoin(wcr.presentationId, function () {
 			var main = document.querySelector("main");
 			main.parentElement.classList.add("container-fill");
@@ -81,10 +81,15 @@ function InitializeViewer() {
 	}
 }
 
-function InitWebRTC() {
+function InitWebRTC(isPresenter) {
 	var wcr = window.WCR;
 	wcr.videoConnection.channel = wcr.presentationId;
 	wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
+	wcr.videoConnection.session = {
+		audio: true,
+		video: true,
+		oneway: true
+	};
 	wcr.videoConnection.mediaConstraints = {
 		audio: true,
 		video: {
@@ -110,6 +115,9 @@ function InitWebRTC() {
 	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
 	wcr.videoConnection.onstream = function (event) {
+		if (isPresenter === false && event.type === "local") {
+			return;
+		}
 		var existing = document.getElementById(event.streamid);
 		if (existing && existing.parentNode) {
 			existing.parentNode.removeChild(existing);
