@@ -125,6 +125,9 @@ function InitWebRTC(isPresenter) {
 		}
 	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
+
+	wcr.videoConnection.onMediaError = console.log;
+
 	wcr.videoConnection.onstream = function (event) {
 		if (isPresenter === false && event.type === "local") {
 			return;
