@@ -122,6 +122,11 @@ function InitWebRTC(isPresenter) {
 					'stun:stun2.l.google.com:19302',
 					'stun:stun.l.google.com:19302?transport=udp',
 			]
+		},
+		{
+			urls: 'turn:openrelay.metered.ca:80',
+			username: 'openrelayproject',
+			credentials: 'openrelayproject'
 		}
 	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
