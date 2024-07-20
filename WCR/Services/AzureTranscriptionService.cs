@@ -1,5 +1,7 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace WCR.Services;
 
@@ -7,11 +9,14 @@ public class AzureTranscriptionService(ComputerVisionClient client) : ITranscrip
 {
     public async Task<IEnumerable<TranscriptionEntry>> TranscribeImageAsync(Stream Image)
     {
-        var response = await client.ReadInStreamWithHttpMessagesAsync(Image, customHeaders: new() {
-            { "Content-Type", ["application/octet-stream"] }
-        });
+        var message = await CreateRequest(client, Image);
 
-        var results_location = response.Headers.OperationLocation[^36..];
+        var response = await client.HttpClient.SendAsync(message);
+
+        if (!response.IsSuccessStatusCode)
+            return [];
+
+        var results_location = response.Headers.GetValues("Operation-Location").First();
         ReadOperationResult results;
         do
         {
@@ -25,7 +30,24 @@ public class AzureTranscriptionService(ComputerVisionClient client) : ITranscrip
         return entries;
     }
 
-    private TranscriptionEntry AzureOCRLineToTranscriptionEntry(Line result)
+    private static async Task<HttpRequestMessage> CreateRequest(ComputerVisionClient client, Stream Image)
+    {
+        MemoryStream ms = new();
+        await Image.CopyToAsync(ms);
+
+        ByteArrayContent content = new(ms.ToArray());
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+        HttpRequestMessage message = new(HttpMethod.Post, $"{client.Endpoint}vision/v3.2/read/analyze?overload=stream&language=en") {
+            Content = content
+        };
+
+        await client.Credentials.ProcessHttpRequestAsync(message, default);
+     
+        return message;
+    }
+
+    private static TranscriptionEntry AzureOCRLineToTranscriptionEntry(Line result)
     {
         TranscriptionEntry entry = new() { Text = result.Text };
         for (int i = 0; i < 4; i++)
