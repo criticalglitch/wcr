@@ -49,7 +49,7 @@ function InitializeViewer() {
 		};
 		InitWebRTC(false);
 
-		wcr.videoConnection.openOrJoin(undefined, InitViewerUI);
+		wcr.videoConnection.openOrJoin(wcr.presentationId, InitViewerUI);
 	}
 	catch (err) {
 		console.error(err.toString());
@@ -71,6 +71,13 @@ function InitViewerUI() {
 					"Content-Type": "application/octet-stream"
 				}), body
 			});
+			if (response.length === 0) {
+				return; // early return
+			}
+			for (var line in response) {
+				var text = BuildLabelFromString(line.text);
+				AddLabelToDocument(text);
+			}
 		}, "image/png");
 	});
 	container.appendChild(button);
@@ -85,12 +92,28 @@ function InitViewerUI() {
 	video.addEventListener("loadeddata", cloneVideoToCanvas);
 }
 
+function BuildLabelFromString(text) {
+	var label = document.createElement("label");
+	label.textContent = text;
+	return label;
+}
+
+function AddLabelToDocument(label) {
+	var textContainer = document.getElementById("transcription-list-container");
+	textContainer.appendChild(document.createElement("br"));
+	textContainer.appendChild(label);
+}
+
 function InitWebRTC(isPresenter) {
 	var wcr = window.WCR;
+	wcr.videoConnection.enableLogs = true;
 	wcr.videoConnection.channel = "wcr";
-	wcr.videoConnection.socketMessageEvent = wcr.presentationId;
+	wcr.videoConnection.socketMessageEvent = "video-broadcast-demo";
 	wcr.videoConnection.sessionid = wcr.presentationId;
-	wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
+	//TODO: Reimplement connection using SignalR
+	//Then uncomment the following line
+	// wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
+	wcr.videoConnection.socketURL = "https://muazkhan.com:9001/";
 	wcr.videoConnection.session = {
 		audio: true,
 		video: true,
@@ -110,23 +133,27 @@ function InitWebRTC(isPresenter) {
 	};
 
 	if (wcr.videoConnection.DetectRTC.browser.name === 'Firefox') {
-		wcr.videoConnection.mediaConstraints.width = 1280;
-		wcr.videoConnection.mediaConstraints.height = 720;
+		wcr.videoConnection.mediaConstraints.video.width = 1280;
+		wcr.videoConnection.mediaConstraints.video.height = 720;
+		delete wcr.videoConnection.mediaConstraints.video.mandatory;
+		delete wcr.videoConnection.mediaConstraints.video.optional;
 	}
 
 	wcr.videoConnection.iceServers = [
 		{
-			"urls": [
-					'stun:stun.l.google.com:19302',
-					'stun:stun1.l.google.com:19302',
-					'stun:stun2.l.google.com:19302',
-					'stun:stun.l.google.com:19302?transport=udp',
-			]
+			urls: 'stun:muazkhan.com:3478',
+			credential: 'muazkh',
+			username: 'hkzaum'
 		},
 		{
-			urls: 'turn:openrelay.metered.ca:80',
-			username: 'openrelayproject',
-			credentials: 'openrelayproject'
+			urls: 'turns:muazkhan.com:5349',
+			credential: 'muazkh',
+			username: 'hkzaum'
+		},
+		{
+			urls: 'turn:muazkhan.com:3478',
+			credential: 'muazkh',
+			username: 'hkzaum'
 		}
 	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
