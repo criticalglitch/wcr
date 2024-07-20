@@ -15,7 +15,9 @@
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5199",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VaultUri": "https://wcrconfig.vault.azure.net/",
+        "AZURE_USERNAME": "a.mccullough@outlook.com"
       }
     },
     "https": {
@@ -24,14 +26,18 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7173;http://localhost:5199",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VaultUri": "https://wcrconfig.vault.azure.net/",
+        "AZURE_USERNAME": "a.mccullough@outlook.com"
       }
     },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "VaultUri": "https://wcrconfig.vault.azure.net/",
+        "AZURE_USERNAME": "a.mccullough@outlook.com"
       }
     }
   }
