@@ -16,7 +16,7 @@ public class AzureTranscriptionService(ComputerVisionClient client) : ITranscrip
         if (!response.IsSuccessStatusCode)
             return [];
 
-        var results_location = response.Headers.GetValues("Operation-Location").First();
+        var results_location = response.Headers.GetValues("Operation-Location").First()[^36..];
         ReadOperationResult results;
         do
         {
