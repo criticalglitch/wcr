@@ -1,4 +1,4 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
+﻿	// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 // Write your JavaScript code.
 
@@ -49,7 +49,7 @@ function InitializeViewer() {
 		};
 		InitWebRTC(false);
 
-		wcr.videoConnection.openOrJoin(wcr.presentationId, InitViewerUI);
+		wcr.videoConnection.openOrJoin(undefined, InitViewerUI);
 	}
 	catch (err) {
 		console.error(err.toString());
@@ -75,19 +75,21 @@ function InitViewerUI() {
 	});
 	container.appendChild(button);
 	var drawingContext = wcr.captureCanvas.getContext("2d");
-	//var video = document.getElementById(wcr.streamid);
-	//function cloneVideoToCanvas() {
-	//	drawingContext.canvas.width = video.videoWidth;
-	//	drawingContext.canvas.height = video.videoHeight;
-	//	drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-	//	requestAnimationFrame(cloneVideoToCanvas);
-	//}
-	//video.addEventListener("loadeddata", cloneVideoToCanvas);
+	var video = document.getElementById(wcr.streamid);
+	function cloneVideoToCanvas() {
+		drawingContext.canvas.width = video.videoWidth;
+		drawingContext.canvas.height = video.videoHeight;
+		drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+		requestAnimationFrame(cloneVideoToCanvas);
+	}
+	video.addEventListener("loadeddata", cloneVideoToCanvas);
 }
 
 function InitWebRTC(isPresenter) {
 	var wcr = window.WCR;
 	wcr.videoConnection.channel = "wcr";
+	wcr.videoConnection.socketMessageEvent = wcr.presentationId;
+	wcr.videoConnection.sessionid = wcr.presentationId;
 	wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
 	wcr.videoConnection.session = {
 		audio: true,
@@ -115,10 +117,10 @@ function InitWebRTC(isPresenter) {
 	wcr.videoConnection.iceServers = [
 		{
 			"urls": [
-				'stun:stun.l.google.com:19302',
-				'stun:stun1.l.google.com:19302',
-				'stun:stun2.l.google.com:19302',
-				'stun:stun.l.google.com:19302?transport=udp',
+					'stun:stun.l.google.com:19302',
+					'stun:stun1.l.google.com:19302',
+					'stun:stun2.l.google.com:19302',
+					'stun:stun.l.google.com:19302?transport=udp',
 			]
 		}
 	];
