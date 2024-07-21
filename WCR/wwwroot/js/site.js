@@ -63,23 +63,7 @@ function InitViewerUI() {
 	var container = document.getElementById("share-container");
 	var button = document.createElement("button");
 	button.textContent = "Request Transcription";
-	button.addEventListener("click", function () {
-		wcr.captureCanvas.toBlob(async function (body) {
-			var response = await fetch(`${window.location.origin}/api/v1/transcribe`, {
-				method: "POST",
-				headers: new Headers({
-					"Content-Type": "application/octet-stream"
-				}), body
-			});
-			if (response.length === 0) {
-				return; // early return
-			}
-			for (var line in response) {
-				var text = BuildLabelFromString(line.text);
-				AddLabelToDocument(text);
-			}
-		}, "image/png");
-	});
+	button.addEventListener("click", CallCaptureTranscription);
 	container.appendChild(button);
 	var drawingContext = wcr.captureCanvas.getContext("2d");
 	var video = document.getElementById(wcr.streamid);
@@ -89,7 +73,7 @@ function InitViewerUI() {
 		drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 		requestAnimationFrame(cloneVideoToCanvas);
 	}
-	video.addEventListener("loadeddata", cloneVideoToCanvas);
+	cloneVideoToCanvas();
 }
 
 function BuildLabelFromString(text) {
@@ -98,12 +82,38 @@ function BuildLabelFromString(text) {
 	return label;
 }
 
-function AddLabelToDocument(label) {
+function AddSeparatorToDocument() {
 	var textContainer = document.getElementById("transcription-list-container");
-	textContainer.appendChild(document.createElement("br"));
-	textContainer.appendChild(label);
+	textContainer.removeChild(textContainer.lastChild);
+	textContainer.appendChild(document.createElement("hr"));
 }
 
+function AddLabelToDocument(label) {
+	var textContainer = document.getElementById("transcription-list-container");
+	textContainer.appendChild(label);
+	textContainer.appendChild(document.createElement("br"));
+}
+
+function CallCaptureTranscription() {
+	var captureCanvas = window.WCR.captureCanvas;
+	captureCanvas.toBlob(async function (body) {
+		var response = await fetch(`${window.location.origin}/api/v1/transcribe`, {
+			method: "POST",
+			headers: new Headers({
+				"Content-Type": "application/octet-stream"
+			}), body
+		});
+		var lines = await response.json();
+		if (lines.length === 0) {
+			return; // early return
+		}
+		for (var line of lines) {
+			var text = BuildLabelFromString(line.text);
+			AddLabelToDocument(text);
+		}
+		AddSeparatorToDocument();
+	}, "image/png");
+}
 function InitWebRTC(isPresenter) {
 	var wcr = window.WCR;
 	wcr.videoConnection.enableLogs = true;
