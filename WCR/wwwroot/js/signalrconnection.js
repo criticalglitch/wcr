@@ -27,6 +27,7 @@ function SignalRConnectionWithHub(hub) {
         SignalRConnection(connection, connectCallback, hub);
     }
 }
+
 function SignalRConnection(connection, connectCallback, hub) {
     function isData(session) {
         return !session.audio && !session.video && !session.screen && session.data;
@@ -36,7 +37,6 @@ function SignalRConnection(connection, connectCallback, hub) {
 
     var mPeer = connection.multiPeersHandler;
     function onMessagesCallback(message) {
-        var connection = SignalRConnection.connection;
         var mPeer = connection.multiPeersHandler;
 
         if (message.remoteUserId !== connection.userid && !message.message.newParticipationRequest) return;
@@ -188,6 +188,87 @@ function SignalRConnection(connection, connectCallback, hub) {
         });
     }, false);
 
+    eventMessageHandler = {
+        'presence': function (data) {
+            if (data.userid === connection.userid) return;
+            connection.onUserStatusChanged({
+                userid: data.userid,
+                status: data.isOnline === true ? 'online' : 'offline',
+                extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {}
+            });
+        },
+        'connect': function() {
+            if (alreadyConnected) {
+                return;
+            }
+            alreadyConnected = true;
+
+            if (connection.enableLogs) {
+                console.info('socket.io connection is opened.');
+            }
+
+            setTimeout(function () {
+                connection.socket.emit('extra-data-updated', connection.extra);
+            }, 1000);
+
+            if (connectCallback) {
+                connectCallback(connection.socket);
+            }
+        },
+        'disconnect': function(event) {
+            connection.onSocketDisconnect(event);
+        },
+        'error': function(event) {
+            connection.onSocketError(event);
+        },
+        'user-disconnected': function(remoteUserId) {
+            if (remoteUserId === connection.userid) {
+                return;
+            }
+
+            connection.onUserStatusChanged({
+                userid: remoteUserId,
+                status: 'offline',
+                extra: connection.peers[remoteUserId] ? connection.peers[remoteUserId].extra || {} : {}
+            });
+
+            connection.deletePeer(remoteUserId);
+        },
+        'user-connected': function(userid) {
+            if (userid === connection.userid) {
+                return;
+            }
+
+            connection.onUserStatusChanged({
+                userid: userid,
+                status: 'online',
+                extra: connection.peers[userid] ? connection.peers[userid].extra || {} : {}
+            });
+        },
+        'closed-entire-session': function(sessionid, extra) {
+            connection.leave();
+            connection.onEntireSessionClosed({
+                sessionid: sessionid,
+                userid: sessionid,
+                extra: extra
+            });
+        },
+        'userid-already-taken': function(useridAlreadyTaken, yourNewUserId) {
+            connection.onUserIdAlreadyTaken(useridAlreadyTaken, yourNewUserId);
+        },
+        'logs': function(log) {
+            if (!connection.enableLogs) return;
+            console.debug('server-logs', log);
+        },
+        'number-of-broadcast-viewers-updated': function(data) {
+            connection.onNumberOfBroadcastViewersUpdated(data);
+        },
+        'set-isInitiator-true': function(sessionid) {
+            if (sessionid != connection.sessionid) return;
+            connection.isInitiator = true;
+        }
+    };
+
     hub.on("broadcastMessage", function (chName, message) {
         if (chName !== channelName) return;
 
@@ -197,17 +278,21 @@ function SignalRConnection(connection, connectCallback, hub) {
         if (data.eventName === connection.socketMessageEvent) {
             console.log(connection.socketMessageEvent);
             onMessagesCallback(data.data);
+            return;
         }
 
-        if (data.eventName === 'presence') {
-            data = data.data;
-            if (data.userid === connection.userid) return;
-            connection.onUserStatusChanged({
-                userid: data.userid,
-                status: data.isOnline === true ? 'online' : 'offline',
-                extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {}
-            });
+        if (data.eventName in eventMessageHandler) {
+            eventMessageHandler[data.eventName](data.data);
         }
+    });
+
+    var checkPresenceResultCallback = function (a, b, c) { };
+    hub.on("check-presence-result", function (isOpen, roomid, extra) {
+        checkPresenceResultCallback(isOpen, roomid, extra);
+    });
+    var openRoomResultCallback = function (a, b) { };
+    hub.on("open-room-result", function (isOpen, error) {
+        openRoomResultCallback(isOpen, error);
     });
 
     // start the hub
@@ -239,7 +324,9 @@ function SignalRConnection(connection, connectCallback, hub) {
 
             if (callback) {
                 if (eventName === 'open-room' || eventName === 'join-room') {
-                    callback(true, null);
+                    openRoomResultCallback  = callback;
+                } else if (eventName == 'check-presence') {
+                    checkPresenceResultCallback = callback;
                 } else {
                     callback();
                 }

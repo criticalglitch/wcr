@@ -38,12 +38,13 @@ public class AzureTranscriptionService(ComputerVisionClient client) : ITranscrip
         ByteArrayContent content = new(ms.ToArray());
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-        HttpRequestMessage message = new(HttpMethod.Post, $"{client.Endpoint}vision/v3.2/read/analyze?overload=stream&language=en") {
+        HttpRequestMessage message = new(HttpMethod.Post, $"{client.Endpoint}vision/v3.2/read/analyze?overload=stream&language=en")
+        {
             Content = content
         };
 
         await client.Credentials.ProcessHttpRequestAsync(message, default);
-     
+
         return message;
     }
 

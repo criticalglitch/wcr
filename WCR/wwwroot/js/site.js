@@ -1,20 +1,20 @@
 ﻿	// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+// for details on configuring this project to bundle and minify static web assets.e
 // Write your JavaScript code.
+
+var connection = new RTCMultiConnection();
+connection.socketURL = "https://muazkhan.com:9001/";
 
 function InitializePresenter() {
 	window.WCR = {
-		presentationId: crypto.randomUUID(),
+		presentationId: "",
 		connection: new signalR.HubConnectionBuilder().withUrl("/PresentationHub").build(), // create connection
-		videoConnection: new RTCMultiConnection()
+		videoConnection: connection
 	};
 	var wcr = window.WCR;
 	try {
-		wcr.videoConnection.sdpConstraints.mandatory = {
-			OfferToReceiveAudio: false,
-			OfferToReceiveVideo: false
-		};
 		InitWebRTC(true);
+		wcr.presentationId = wcr.videoConnection.token();
 		wcr.videoConnection.open(wcr.presentationId, function () {
 			var container = document.getElementById("share-container");
 			var button = document.createElement("button");
@@ -38,18 +38,15 @@ function InitializeViewer() {
 	window.WCR = {
 		presentationId: urlParams.get("presentationId"),
 		connection: new signalR.HubConnectionBuilder().withUrl("/PresentationHub").build(), // create connection
-		videoConnection: new RTCMultiConnection(),
+		videoConnection: connection,
 		captureCanvas: document.createElement("canvas")
 	};
 	var wcr = window.WCR;
 	try {
-		wcr.videoConnection.sdpConstraints.mandatory = {
-			OfferToReceiveAudio: true,
-			OfferToReceiveVideo: true
-		};
 		InitWebRTC(false);
 
-		wcr.videoConnection.openOrJoin(wcr.presentationId, InitViewerUI);
+		wcr.videoConnection.join(wcr.presentationId);
+		InitViewerUI();
 	}
 	catch (err) {
 		console.error(err.toString());
@@ -66,16 +63,17 @@ function InitViewerUI() {
 	button.addEventListener("click", CallCaptureTranscription);
 	container.appendChild(button);
 	var drawingContext = wcr.captureCanvas.getContext("2d");
-	var video = document.getElementById(wcr.streamid);
 	function cloneVideoToCanvas() {
-		drawingContext.canvas.width = video.videoWidth;
-		drawingContext.canvas.height = video.videoHeight;
-		drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+		var video = document.getElementById(wcr.streamid);
+		if (!!video) {
+			drawingContext.canvas.width = video.videoWidth;
+			drawingContext.canvas.height = video.videoHeight;
+			drawingContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+		}
 		requestAnimationFrame(cloneVideoToCanvas);
 	}
 	cloneVideoToCanvas();
 }
-
 function BuildLabelFromString(text) {
 	var label = document.createElement("label");
 	label.textContent = text;
@@ -116,19 +114,13 @@ function CallCaptureTranscription() {
 }
 function InitWebRTC(isPresenter) {
 	var wcr = window.WCR;
-	wcr.videoConnection.enableLogs = true;
-	wcr.videoConnection.channel = "wcr";
-	wcr.videoConnection.socketMessageEvent = "video-broadcast-demo";
-	wcr.videoConnection.sessionid = wcr.presentationId;
-	//TODO: Reimplement connection using SignalR
-	//Then uncomment the following line
-	// wcr.videoConnection.setCustomSocketHandler(SignalRConnectionWithHub(wcr.connection));
-	wcr.videoConnection.socketURL = "https://muazkhan.com:9001/";
 	wcr.videoConnection.session = {
 		audio: true,
-		video: true,
-		oneway: true
+		video: true
 	};
+	if (!isPresenter) {
+		wcr.videoConnection.session.oneway = true;
+	}
 	wcr.videoConnection.mediaConstraints = {
 		audio: true,
 		video: {
@@ -140,7 +132,7 @@ function InitWebRTC(isPresenter) {
 			},
 			optional: []
 		}
-	};
+	}
 
 	if (wcr.videoConnection.DetectRTC.browser.name === 'Firefox') {
 		wcr.videoConnection.mediaConstraints.video.width = 1280;
@@ -149,30 +141,11 @@ function InitWebRTC(isPresenter) {
 		delete wcr.videoConnection.mediaConstraints.video.optional;
 	}
 
-	wcr.videoConnection.iceServers = [
-		{
-			urls: 'stun:muazkhan.com:3478',
-			credential: 'muazkh',
-			username: 'hkzaum'
-		},
-		{
-			urls: 'turns:muazkhan.com:5349',
-			credential: 'muazkh',
-			username: 'hkzaum'
-		},
-		{
-			urls: 'turn:muazkhan.com:3478',
-			credential: 'muazkh',
-			username: 'hkzaum'
-		}
-	];
 	wcr.videoConnection.videosContainer = document.getElementById("presentation-container");
 
-	wcr.videoConnection.enableScalableBroadcast = true;
 	wcr.videoConnection.dontAttachLocalStream = !isPresenter;
-	wcr.videoConnection.dontGetRemoteStream = isPresenter;
-
 	wcr.videoConnection.onstream = function (event) {
+		wcr.streamid = event.streamid;
 		var existing = document.getElementById(event.streamid);
 		if (existing && existing.parentNode) {
 			existing.parentNode.removeChild(existing);
@@ -181,22 +154,19 @@ function InitWebRTC(isPresenter) {
 		event.mediaElement.removeAttribute("srcObject");
 		event.mediaElement.muted = true;
 		event.mediaElement.volume = 0;
-
-		var connection = wcr.videoConnection;
 		var presentation = document.createElement("video");
-		presentation.setAttribute("autoplay", true);
-		presentation.setAttribute("playsinline", true);
+		presentation.id = event.streamid;
+		presentation.setAttributeNode(document.createAttribute("autoplay"));
+		presentation.setAttributeNode(document.createAttribute("muted"));
+		presentation.setAttributeNode(document.createAttribute("playsinline"));
+		presentation.setAttributeNode(document.createAttribute("loop"));
+		presentation.setAttributeNode(document.createAttribute("controls"));
 		if (event.type === "local") {
 			presentation.volume = 0;
-			presentation.muted = true;
 		}
 		presentation.srcObject = event.stream;
-		presentation.id = event.streamid;
-		var width = parseInt(connection.videosContainer.clientWidth / 3) - 25;
-		presentation.style.width = width;
-		connection.videosContainer.appendChild(presentation);
-		wcr.streamid = event.streamid;
-		setTimeout(presentation.media.play, 5000);
+		wcr.videoConnection.videosContainer.appendChild(presentation);
+		setTimeout(presentation.play.bind(presentation), 5000);
 	};
 }
 
