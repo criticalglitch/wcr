@@ -157,12 +157,11 @@ function InitWebRTC(isPresenter) {
 		var presentation = document.createElement("video");
 		presentation.id = event.streamid;
 		presentation.setAttributeNode(document.createAttribute("autoplay"));
-		presentation.setAttributeNode(document.createAttribute("muted"));
 		presentation.setAttributeNode(document.createAttribute("playsinline"));
-		presentation.setAttributeNode(document.createAttribute("loop"));
 		presentation.setAttributeNode(document.createAttribute("controls"));
 		if (event.type === "local") {
 			presentation.volume = 0;
+			presentation.setAttributeNode(document.createAttribute("muted"));
 		}
 		presentation.srcObject = event.stream;
 		wcr.videoConnection.videosContainer.appendChild(presentation);
