@@ -87,5 +87,6 @@ body {
 
 #transcription-list-container {
     min-height: 100%;
-    width: 100%;
+    width: calc(100% - 5px);
+    margin-left: 5px;
 }

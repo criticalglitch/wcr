@@ -7,7 +7,7 @@ namespace WCR.Pages
     {
         public void OnGet([FromQuery] string? presentationId = null)
         {
-
+            ViewData["presentationid"] = presentationId;
         }
     }
 }
